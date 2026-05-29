@@ -255,12 +255,14 @@ class SimulacionGuardiaOdontologica:
                 rnd_ll2, t_ll2 = self._exp_neg(self.media_llegada)
                 prox_llegada = clock + t_ll2
 
+                t_triage_llegada = None
                 if triage_estado == self.LIBRE and triage_cola == 0:
-                    triage_estado   = self.ATENDIENDO
-                    prox_fin_triage = clock + self.tiempo_triage
-                    pacientes[pid]  = {"id": pid, "estado": "T",
-                                       "inicio_espera_cola": None,
-                                       "fin_espera": None, "timer_activo": False}
+                    triage_estado    = self.ATENDIENDO
+                    prox_fin_triage  = clock + self.tiempo_triage
+                    t_triage_llegada = self.tiempo_triage
+                    pacientes[pid]   = {"id": pid, "estado": "T",
+                                        "inicio_espera_cola": None,
+                                        "fin_espera": None, "timer_activo": False}
                 else:
                     triage_cola    += 1
                     pacientes[pid]  = {"id": pid, "estado": "CT",
@@ -268,8 +270,9 @@ class SimulacionGuardiaOdontologica:
                                        "fin_espera": None, "timer_activo": False}
                     cola_triage.append({"id": pid})
 
-                _maybe_save(snapshot("llegada_paciente",
+                _maybe_save(snapshot("llegada_paciente_P" + str(pid),
                                            rnd_ll=rnd_ll2, t_ll=t_ll2,
+                                           t_triage=t_triage_llegada,
                                            pac_id=pid))
 
             # ── FIN TRIAGE ────────────────────────────────────────────────
@@ -341,8 +344,9 @@ class SimulacionGuardiaOdontologica:
                 else:
                     triage_estado = self.LIBRE
 
+                t_tr_snap = self.tiempo_triage if prox_fin_triage < INF else None
                 _maybe_save(snapshot("fin_triage",
-                                           t_triage=self.tiempo_triage,
+                                           t_triage=t_tr_snap,
                                            rnd_deriv=rnd_deriv, derivado_a=destino,
                                            rnd_od=rnd_od_v,  t_od=t_od_v,
                                            rnd_cir=rnd_cir_v, t_cir=t_cir_v,

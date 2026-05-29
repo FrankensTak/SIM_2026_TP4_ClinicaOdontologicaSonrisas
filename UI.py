@@ -59,6 +59,7 @@ class AppSimulacion:
         self._ultima_iid      = None   # item id de la ultima fila en el tree
 
         self._col_polling = False
+        self._tree_font_size = 8
         self._build_styles()
         self._crear_widgets()
 
@@ -312,12 +313,29 @@ class AppSimulacion:
             tree.tag_configure("ultima", background=ROW_LAST, foreground=YELLOW)
 
         self._col_widths = {}
+        
+        for tree in (self._tree, self._tree_last):
+            tree.bind("<Control-MouseWheel>", self._on_zoom)
+            tree.bind("<Control-Button-4>",   self._on_zoom)
+            tree.bind("<Control-Button-5>",   self._on_zoom)
 
         # Menus de copia con clic derecho en ambos treeviews
         self.root.after(200, lambda: self._menu_copia_tree(self._tree))
         self.root.after(200, lambda: self._menu_copia_tree(self._tree_last))
         # Menus en todos los Labels (status, params, etc.)
         self.root.after(700, lambda: self._instalar_copia_recursiva(self.root))
+        
+    def _on_zoom(self, event):
+        if event.num == 4 or (hasattr(event, 'delta') and event.delta > 0):
+            self._tree_font_size = min(self._tree_font_size + 1, 20)
+        else:
+            self._tree_font_size = max(self._tree_font_size - 1, 6)
+        size = self._tree_font_size
+        s = ttk.Style()
+        s.configure("Treeview", font=("Consolas", size), rowheight=size + 10)
+        s.configure("Treeview.Heading", font=("Consolas", size, "bold"))
+        self._tree.update_idletasks()
+        self._tree_last.update_idletasks()
 
     def _arrancar_polling(self):
         if not self._col_polling:
