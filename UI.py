@@ -45,7 +45,7 @@ class AppSimulacion:
 
     def __init__(self, root):
         self.root = root
-        self.root.title("SIMULACION 4K2 - 2026  |  Guardia Odontologica Sonrisas")
+        self.root.title("SIMULACIÓN 4K2 - 2026  |  Guardia Odontológica Sonrisas")
         self.root.configure(bg=BG_DARK)
         try:
             self.root.state("zoomed")
@@ -108,13 +108,13 @@ class AppSimulacion:
     def _crear_widgets(self):
         header = tk.Frame(self.root, bg=BG_PANEL, height=46)
         header.pack(fill="x", side="top")
-        tk.Label(header, text="SIMULACION 4K2 - 2026",
+        tk.Label(header, text="SIMULACIÓN 4K2 - 2026",
                  bg=BG_PANEL, fg=ACCENT,
                  font=("Consolas", 13, "bold")).pack(side="left", padx=(18, 6), pady=10)
         tk.Label(header, text="|",
                  bg=BG_PANEL, fg=FG_DIM,
                  font=("Consolas", 13)).pack(side="left", padx=4, pady=10)
-        tk.Label(header, text="Guardia Odontologica Sonrisas",
+        tk.Label(header, text="Guardia Odontológica Sonrisas",
                  bg=BG_PANEL, fg=FG_MAIN,
                  font=("Consolas", 13)).pack(side="left", padx=(4, 18), pady=10)
 
@@ -131,8 +131,8 @@ class AppSimulacion:
         # ── Status bar: entre el header y los parametros ─────────────────
         self._lbl_status = tk.Label(
             left,
-            text="Ingrese los parametros y presione SIMULAR.",
-            bg="#111827", fg=ACCENT2,
+            text="Ingrese los parámetros y presione SIMULAR.",
+            bg="#111827", fg="#39ff14",
             font=("Consolas", 9, "bold"),
             wraplength=320, justify="left",
             anchor="w", pady=6, padx=10
@@ -191,15 +191,15 @@ class AppSimulacion:
         section("SISTEMA")
         param("Media llegada (min)",          "media_llegada",         30, "exp-")
         param("Tiempo triage (min)",          "tiempo_triage",          5)
-        param("Media Odontologo (min)",       "media_odontologo",      30, "exp-")
+        param("Media Odontólogo (min)",       "media_odontologo",      30, "exp-")
         param("Uniforme A (min)",             "uniforme_a",            40, "unif")
         param("Uniforme B (min)",             "uniforme_b",            60, "unif")
         param("Tiempo paciencia (min)",       "tiempo_paciencia",      30)
-        param("Frec. Esteriliz. (pacientes)", "pacientes_esterilizar",  3)
+        param("Frec. Esteriliz. (pac.)", "pacientes_esterilizar",  3)
         param("Tiempo esterilizac. (min)",    "tiempo_esterilizacion", 15)
 
         section("SIMULACION")
-        param("Tiempo maximo (min)",   "tiempo_max",       480)
+        param("Tiempo máximo (min)",   "tiempo_max",       480)
         param("Max. iteraciones (N)",  "max_iteraciones", 100000)
 
         section("VECTOR DE ESTADO")
@@ -211,7 +211,7 @@ class AppSimulacion:
         ttk.Button(inner, text="SIMULAR",
                    style="Run.TButton",
                    command=self._run).pack(fill="x", padx=6, pady=3)
-        ttk.Button(inner, text="ESTADISTICAS FINALES",
+        ttk.Button(inner, text="ESTADÍSTICAS FINALES",
                    style="Stats.TButton",
                    command=self._ver_estadisticas).pack(fill="x", padx=6, pady=3)
         ttk.Button(inner, text="EXPORTAR A EXCEL",
@@ -567,15 +567,15 @@ class AppSimulacion:
         df_last = self._sim.to_dataframe([ultima]) if ultima else pd.DataFrame()
         self._poblar_tree(self._df_filter, df_last)
 
-        # Estado: FIN (verde) — iteraciones | dia | hora | min
-        n   = stats.get("iteraciones_totales", 0)
-        t   = stats.get("tiempo_simulado", 0.0)
-        dia = int(t // (24 * 60)) + 1
-        h   = int((t % (24 * 60)) // 60)
-        m   = round(t % 60, 1)
+        # Estado: FIN (verde) — leer i, Dia, Hora, Clock directamente de la ultima fila
+        uf  = self._sim.ultima_fila or {}
+        n   = uf.get("iteracion", stats.get("iteraciones_totales", 0))
+        dia = uf.get("dia", 1)
+        h   = uf.get("hora", 0.0)
+        m   = uf.get("clock", 0.0)
         self._lbl_status.configure(
-            text=str(n) + " iter  |  Dia " + str(dia)
-                 + "  |  " + str(h) + "h  |  " + str(m) + "min",
+            text=str(n) + " i |  Dia " + str(dia)
+                 + "  |  " + str(h) + " h  |  " + str(m) + " min",
             fg=GREEN
         )
 
@@ -731,12 +731,12 @@ class AppSimulacion:
             return
         s   = self._sim.estadisticas
         win = tk.Toplevel(self.root)
-        win.title("Estadisticas Finales  -  Guardia Odontologica Sonrisas")
+        win.title("Estadísticas Finales  -  Guardia Odontológica Sonrisas")
         win.configure(bg=BG_DARK)
         win.geometry("620x900")
         win.resizable(True, True)
 
-        tk.Label(win, text="RESULTADOS DE LA SIMULACION",
+        tk.Label(win, text="RESULTADOS DE LA SIMULACIÓN",
                  bg=BG_DARK, fg=ACCENT,
                  font=("Consolas", 14, "bold")).pack(pady=(18, 4))
         tk.Label(win,
@@ -776,13 +776,13 @@ class AppSimulacion:
         _row_result(cA, "% Pacientes retirados", str(s["pct_retirados"]) + "%", RED)
 
         # ── Consigna B ────────────────────────────────────────────────────
-        cB = _card(win, "CONSIGNA B  -  Espera Odontologo General")
+        cB = _card(win, "CONSIGNA B  -  Espera Odontólogo General")
         _row_detail(cB, "Pacientes que aceptaron",  s["cnt_acepta_od"],  GREEN)
         _row_detail(cB, "Acum. tiempo cola (min)",  s["acum_espera_od"], ACCENT)
         _row_result(cB, "Prom. espera cola (min)", str(s["prom_espera_od"]) + " min", GREEN)
 
         # ── Consigna C ────────────────────────────────────────────────────
-        cC = _card(win, "CONSIGNA C  -  Ocupacion Cirujano")
+        cC = _card(win, "CONSIGNA C  -  Ocupación Cirujano")
 
         # Acumuladores (detalle)
         tk.Label(cC, text="  ACUMULADORES", bg=BG_CARD, fg=FG_DIM,
